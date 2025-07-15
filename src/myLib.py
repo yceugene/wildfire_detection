@@ -1,24 +1,12 @@
 # Import libraries
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from math import sqrt
-
-from IPython.display import display
-from scipy.stats import ttest_ind, norm, f
-from statsmodels.tsa.seasonal import seasonal_decompose
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
-from sklearn.neighbors import KNeighborsClassifier
-import statsmodels.api as sm
 
 def check_column_sources(column_list, source_table):
     """
-    Check if all variables in a list come from the same data source.
+    Given a list of variable (column) names and a metadata table, identify
+    the original source of each variable.
 
     Parameters:
     - column_list: list of column names to check
@@ -43,7 +31,23 @@ def check_column_sources(column_list, source_table):
     return unique_sources, source_map
 
 def check_missing_row_overlap(df, column_group, group_name):
-    import pandas as pd
+    """
+    Analyzes how missing values overlap across a group of related columns.
+
+    It helps determine whether missing values occur in the same rows (e.g.,
+    all missing at once) or are scattered independently.
+
+    Parameters:
+    - df (DataFrame): Input dataset.
+    - column_group (list): List of column names to check for missing overlap.
+    - group_name (str): Label used in printed output.
+
+    Returns:
+    - Dictionary with:
+        'union': rows with at least one missing value,
+        'intersection': rows where all columns are missing,
+        'difference': rows partially missing (not full overlap).
+    """
 
     # Get the set of indices (rows) with missing values for each column in the group
     missing_index_sets = {
@@ -79,6 +83,17 @@ def check_missing_row_overlap(df, column_group, group_name):
     }
 
 def check_missing_and_plot(df, df_name):
+    """
+    Reports and visualizes missing data percentages per column.
+
+    Parameters:
+    - df (DataFrame): Input dataset.
+    - df_name (str): Name to include in printed headers and plots.
+
+    Returns:
+    - DataFrame summarizing missing values and their percentages.
+    """
+
     print(f"\n--- Missing Values in {df_name} ---")
     missing = df.isnull().sum()
     percent = (missing / len(df)) * 100
@@ -128,6 +143,17 @@ def check_missing_and_plot(df, df_name):
     return result.reset_index(drop=True)
 
 def check_missing(df, df_name):
+    """
+    Reports missing data counts and percentages per column (no plotting).
+
+    Parameters:
+    - df (DataFrame): Input dataset.
+    - df_name (str): Name for printed summary.
+
+    Returns:
+    - DataFrame summarizing missing values and their percentages.
+    """
+
     print(f"\n--- Missing Values in {df_name} ---")
     missing = df.isnull().sum()
     percent = (missing / len(df)) * 100
@@ -143,7 +169,8 @@ def check_missing(df, df_name):
 
 def plot_missing_spatial(df, cols_to_check, lon_col='lon', lat_col='lat'):
     """
-    Plot spatial distribution of missing values for selected columns.
+    Visualizes the spatial location of missing values for selected columns
+    on a scatter plot using latitude and longitude.
 
     Parameters:
     - df: pandas DataFrame
